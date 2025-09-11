@@ -1,0 +1,12 @@
+001192|compositeIndicator|table|Indicateur des composites|CODE TABLE|0|0|8|NA|0|0
+029192|geodesicSystem|table|Systeme geodesique|CODE TABLE|0|0|6|NA|0|0
+025194|compositeVersionNumber|long|Numero de version du composite|Numeric|2|0|16|NA|0|0
+025192|compositionMethod|table|Methode de composition dans les zones de recouvrement|CODE TABLE|0|0|8|NA|0|0
+006196|maxObliqueRange|long|Distance oblique maximal d'utilisation des donnees|m|-3|0|16|NA|0|0
+025210|globalCorrectionFactor|long|Facteur de correction global (pluie pluviometre)/(pluie radar)|Numeric|2|0|10|NA|0|0
+048192|paddingByte|long|Bit de calage|Numeric|0|0|1|NA|0|0
+031192|wut|long|Facteur super elargi de repetition differe du descripteur|Numeric|0|0|32|NA|0|0
+006198|meridianLongitudeParallelToYAxis|double|Longitude du meridien parallele a l'axe des Y|deg|5|-18000000|26|NA|0|0
+005194|projCenterIndicator|table|Indicateur du centre de projection|CODE TABLE|0|0|8|NA|0|0
+030192|swipingMode|table|Mode de balayage|CODE TABLE|0|0|8|NA|0|0
+005195|refLatitude|double|Latitude de reference|deg|5|-9000000|25|NA|0|0
