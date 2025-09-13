@@ -142,6 +142,7 @@ std::vector<SmallCode> Section3And4::makeCodeTree(const std::vector<Descriptor> 
     std::vector<std::vector<SmallCode> *> blocks{&tree};
     std::map<Code, std::vector<Descriptor> > sequences;
 
+    std::map<int, long long> dataOffsets;
     int addDataWidth = 0;
 
     while (!sections.empty()) {
@@ -161,10 +162,20 @@ std::vector<SmallCode> Section3And4::makeCodeTree(const std::vector<Descriptor> 
                     }
 
                     SmallCode cc{*c};
+                    // Try to find a custom offset or insert the default one for future calls
+                    auto [offsetIt, alreadyPresent] = dataOffsets.emplace(cc.code, cc.offset);
+                    cc.offset = offsetIt->second;
                     if (c->type == "long" || c->type == "double") {
-                        //TODO other value types, scaling, offsetting, etc.
                         cc.size += addDataWidth;
-                        cc.value = extractValue(pos, cc.size);
+                        uint32_t value = extractValue(pos, cc.size);
+                        if (std::popcount(value) < cc.size)
+                            cc.value = value + offsetIt->second;
+                    } else if (c->type == "string") {
+                        if (pos % 8 == 0) {
+                            // we only bother with aligned strings for now
+                            cc.value = std::string(m_section4Data.begin() + (pos / 8),
+                                                   m_section4Data.begin() + (pos + cc.size) / 8 + 1);
+                        }
                     }
 
                     cc.pos = pos;
@@ -360,7 +371,14 @@ void Section3And4::displayCodeTree(std::ostream &os, const std::vector<SmallCode
                 auto &&details = m_codeTable.getElementCode(c.code);
                 if (details) {
                     std::string prefix(indentation, '\t');
-                    std::println(os, "{}{:06d} {} {} {} : {}", prefix, c.code, details->name, c.size, c.pos, c.value);
+                    std::print(os, "{}{:06d} {} {} {}", prefix, c.code, details->name, c.size, c.pos);
+                    if (std::holds_alternative<long long>(c.value) || std::holds_alternative<double>(c.value)) {
+                        std::println(os, " : {}e{}", std::get<long long>(c.value), -c.factor);
+                    } else if (std::holds_alternative<std::string>(c.value)) {
+                        std::println(os, " : {}", std::get<std::string>(c.value).data());
+                    } else if (std::holds_alternative<std::nullopt_t>(c.value)) {
+                        std::println(os, " : missing");
+                    }
                     ++it;
                 }
             } else if (f == 1) {

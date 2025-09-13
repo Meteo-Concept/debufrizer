@@ -20,7 +20,7 @@ struct SmallCode {
 	int factor = 0;
 	int offset = 0;
 	int size = 0;
-	long long value = 0;
+	std::variant<std::nullopt_t, long long, double, std::string> value = std::nullopt;
 	unsigned long pos = -1;
 	unsigned long repetitions = 0;
 	std::vector<SmallCode> block;
