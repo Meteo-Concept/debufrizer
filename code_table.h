@@ -7,30 +7,24 @@
 #include <vector>
 #include <optional>
 
+#include "descriptor.h"
+#include "code.h"
+
 class CodeTable
 {
-public:
-	//example: 006196|maxObliqueRange|long|Distance oblique maximal d'utilisation des donnees|m|-3|0|16
-	struct Code {
-		int code = -1;
-		std::string name;
-		std::string type;
-		std::string description;
-		std::string unit;
-		int factor;
-		int offset;
-		int size;
-	};
 private:
 	std::map<int, Code> m_codes;
-	std::map<int, std::vector<int>> m_sequences;
+	std::map<int, std::vector<Descriptor>> m_sequences;
 
 	void parseElementTable(const std::string& filename);
+	void parseSequenceTable(const std::string& filename);
 
 public:
 	CodeTable() = default;
 	CodeTable(int globalTable, int globalTableVersion, int origCentre, int localTableVersion);
-	std::optional<Code> getCode(int code) const;
+	std::optional<Code> getElementCode(int code) const;
+	std::optional<std::vector<Descriptor>> getSequence(int code) const;
+	std::vector<Descriptor> expand(const std::vector<Descriptor>& baseDescriptors) const;
 };
 
 #endif

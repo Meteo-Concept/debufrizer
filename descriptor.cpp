@@ -3,6 +3,20 @@
 
 #include "descriptor.h"
 
+Descriptor::Descriptor(int f, int x, int y) :
+	m_f{f},
+	m_x{x},
+	m_y{y}
+{}
+
+Descriptor::Descriptor(const std::string& s)
+{
+	int c = std::stoi(s);
+	m_f = c / 100000;
+	m_x = (c % 100000) / 1000;
+	m_y = c % 1000;
+}
+
 std::istream& operator>>(std::istream& is, Descriptor& d)
 {
 	char buffer[2];
@@ -18,6 +32,6 @@ std::istream& operator>>(std::istream& is, Descriptor& d)
 
 std::ostream& operator<<(std::ostream& os, const Descriptor& d)
 {
-	std::print(os, "{}{:02d}{:03d}", d.m_f, d.m_x, d.m_y);
+	std::print(os, "{:01d}{:02d}{:03d}", d.m_f, d.m_x, d.m_y);
 	return os;
 }

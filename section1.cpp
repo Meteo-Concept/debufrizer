@@ -2,9 +2,10 @@
 #include <chrono>
 #include <cstdint>
 
-#include <date/date.h>
-
 #include "section1.h"
+
+using namespace std::chrono;
+using namespace std::chrono_literals;
 
 std::istream& operator>>(std::istream& is, Section1& s)
 {
@@ -82,16 +83,14 @@ std::istream& operator>>(std::istream& is, Section1& s)
 	// date
 	is.read(buffer, 7);
 	if (is) {
-		s.m_time = date::sys_days{
-			date::year_month_day{
-				date::year{(static_cast<uint8_t>(buffer[0]) << 8) + static_cast<uint8_t>(buffer[1])},
-				date::month{static_cast<unsigned>(buffer[2])},
-				date::day{static_cast<unsigned>(buffer[3])}
+		s.m_time = sys_days{
+			std::chrono::year_month_day{
+				year{(uint8_t(buffer[0]) << 8) + uint8_t(buffer[1])}/buffer[2]/buffer[3]
 			}
 		} +
-		std::chrono::hours{buffer[4]} +
-		std::chrono::minutes{buffer[5]} +
-		std::chrono::seconds{buffer[6]};
+		hours{buffer[4]} +
+		minutes{buffer[5]} +
+		seconds{buffer[6]};
 	}
 
 	// optional field
@@ -118,7 +117,7 @@ std::ostream& operator<<(std::ostream& os, const Section1& s)
 	std::println(os, "data subcategory: {}", s.m_dataSubcategory);
 	std::println(os, "master table version: {}", s.m_masterTableVersion);
 	std::println(os, "local table version: {}", s.m_localTableVersion);
-	std::println(os, "time: {}", date::format("%Y-%m-%dT%H:%M:%SZ", s.m_time));
+	std::println(os, "time: {}", s.m_time);
 	if (s.m_size > 22) {
 		std::println(os, "local field: {}", s.m_optionalLocalField);
 	}

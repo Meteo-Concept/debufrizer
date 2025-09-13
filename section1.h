@@ -6,8 +6,6 @@
 #include <chrono>
 #include <cstdint>
 
-#include <date/date.h>
-
 class Section1
 {
 private:
@@ -22,7 +20,7 @@ private:
 	uint8_t m_localDataSubcategory;
 	uint8_t m_masterTableVersion;
 	uint8_t m_localTableVersion;
-	date::sys_seconds m_time;
+	std::chrono::sys_seconds m_time;
 	uint8_t m_optionalLocalField = 0;
 
 public:
@@ -37,7 +35,7 @@ public:
 	inline uint8_t getLocalDataSubcategory() const { return m_localDataSubcategory; }
 	inline uint8_t getMasterTableVersion() const { return m_masterTableVersion; }
 	inline uint8_t getLocalTableVersion() const { return m_localTableVersion; }
-	inline date::sys_seconds getTime() const { return m_time; }
+	inline std::chrono::sys_seconds getTime() const { return m_time; }
 	inline uint8_t getLocalField() const { return m_optionalLocalField; }
 
 	friend std::istream& operator>>(std::istream& is, Section1& s);

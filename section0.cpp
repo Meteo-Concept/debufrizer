@@ -14,7 +14,7 @@ std::istream& operator>>(std::istream& is, Section0& s)
 	char buffer[3];
 	is.read(buffer, 3);
 	if (is) {
-		s.m_size = (unsigned(buffer[0]) << 16) + (unsigned(buffer[1]) << 8) + unsigned(buffer[2]);
+		s.m_size = (uint8_t(buffer[0]) << 16) + (uint8_t(buffer[1]) << 8) + uint8_t(buffer[2]);
 	}
 
 	is.read(buffer, 1);
