@@ -24,8 +24,11 @@ private:
 	CodeTable m_codeTable;
 
 	void displayDescriptors(std::ostream& os, const std::vector<Descriptor>& descs) const;
+
 	std::vector<SmallCode> makeCodeTree(const std::vector<Descriptor>& descs);
-	void displayCodeTree(std::ostream& os, const std::vector<SmallCode>& codes) const;
+	void dumpCodeTree(std::ostream& os, const std::vector<SmallCode>& codes) const;
+	uint32_t extractValue(unsigned long pos, int size) const;
+	SmallCode extractSingleElement(uint64_t pos, std::map<int, long long>& dataOffsets, int addDataWidth, int addDataScale, const Code& c);
 
 public:
 	inline uint32_t getSection3Size() const { return m_sizeSection3; }
@@ -33,11 +36,12 @@ public:
 	inline uint16_t getNumberOfSubsets() const { return m_numberOfSubsets; }
 	inline bool containsObservedData() const { return m_observedData; }
 	inline bool isCompressed() const { return m_compressedData; }
+	std::pair<int, int> getGridSize() const;
 
 	explicit Section3And4(CodeTable table = CodeTable{});
 	void setCodeTable(CodeTable table);
 
-	uint32_t extractValue(unsigned long pos, int size) const;
+	void buildTiff(const std::string& filename, Descriptor target = Descriptor{0, 21, 1});
 
 	friend std::istream& operator>>(std::istream& is, Section3And4& s);
 	friend std::ostream& operator<<(std::ostream& os, const Section3And4& s);
