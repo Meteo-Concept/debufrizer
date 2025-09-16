@@ -8,8 +8,12 @@
 
 int main(int argc, char** argv)
 {
-	std::string file = argc > 1 ? std::string{argv[1]} : "T_IMFR27_C_LFPW_20250909070000.bufr";
-	std::ifstream is{file, std::ios::binary};
+	if (argc <= 1 || argc > 3) {
+		std::println(std::cerr, "Usage: {} <BUFR Météo France file> [<output file>]", argv[0]);
+		return 1;
+	}
+	std::string inputFile = std::string{argv[1]};
+	std::ifstream is{inputFile, std::ios::binary};
 
 	std::cerr << std::boolalpha << "Parser is ready: " << bool(is) << std::endl;
 
@@ -37,4 +41,10 @@ int main(int argc, char** argv)
 
 	std::cout << section3And4 << std::endl;
 	std::cerr << std::boolalpha << "Parsing is going alright after section 3: " << bool(is) << std::endl;
+
+	std::string outputFile = inputFile + ".tif";
+	if (argc == 3) {
+		outputFile = argv[2];
+	}
+	section3And4.buildTiff(outputFile);
 }
