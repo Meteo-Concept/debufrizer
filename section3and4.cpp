@@ -13,9 +13,9 @@
 #include "descriptor.h"
 #include "code_table.h"
 
-Section3And4::Section3And4(CodeTable table)
-    :
-    m_codeTable{table} {}
+Section3And4::Section3And4(CodeTable table) :
+    m_codeTable{std::move(table)}
+{}
 
 void Section3And4::setCodeTable(CodeTable table)
 {
