@@ -10,6 +10,18 @@ Parse Météo France reflectivity radar BUFR files and output the corresponding 
   v3.10 is the one that has been tested, previous versions likely to work as
   well to some extent, we don't use very advanced functions from GDAL
 
+To execute the program, the BUFR descriptor tables, with local extensions by
+Météo France, must be present in the working directory in the `bufr` folder,
+following the hierarchy and format used by the ECMWF tools `eccodes`. See the
+examples folder and the Usage section below for an example.
+The tables have been extracted from [the ECMWF data](https://github.com/ecmwf/eccodes/tree/develop/definitions/bufr)
+and the [Météo France documentation](https://donneespubliques.meteofrance.fr/?fond=produit&id_produit=307&id_rubrique=34).
+The [Météo France tables](https://donneespubliques.meteofrance.fr/client/document/tables_397.zip)
+have been subsetted and converted to the ECMWF format by yours truly.
+
+You may also need some understanding of the [BUFR format](https://library.wmo.int/records/item/35625-manual-on-codes-volume-i-2-international-codes),
+especially if the program doesn't do what you want and you wish to modify it.
+
 ## Compilation
 
 ```sh
@@ -46,11 +58,12 @@ additional documentation on their [wiki](https://confluence-meteofrance.atlassia
 This program is probably only useful for Météo France radar BUFR files, and
 possibly other OPERA members files as well, although only Météo France
 reflectivity files have been tested. It's also unclear how much resistant to
-future format changes this program is resistant to. Basically, it just looks
-through the file to find the grid size, checks that the projection is the only
-one it supports, finds a block of data the same size of the grid and
-corresponding to reflectivity data, and builds a TIFF file with that. Caveat
-emptor.
+future format changes this program is.
+
+Basically, it just looks through the file to find the grid size, checks that
+the projection is the only one it supports, finds a block of data the same size
+of the grid and corresponding to reflectivity data, and builds a TIFF file with
+that. Caveat emptor.
 
 
 # License
@@ -63,6 +76,6 @@ FRANCE
 contact@meteo-concept.fr
 
 under the GNU Public License (GPL) version 3 or higher. The text of the license
-is available in the License file.
+is available in the LICENSE file.
 
 © SAS JD Environnement 2025
