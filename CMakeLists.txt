@@ -15,3 +15,5 @@ add_executable(debufrizer
 )
 
 target_link_libraries(debufrizer PRIVATE GDAL::GDAL)
+
+install(TARGETS debufrizer DESTINATION bin)
