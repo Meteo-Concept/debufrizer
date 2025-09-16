@@ -1,7 +1,10 @@
 #include <iostream>
 #include <string>
+#include <cstdint>
 
 #include "descriptor.h"
+
+#include <iomanip>
 
 Descriptor::Descriptor(int f, int x, int y) :
 	m_f{f},
@@ -32,6 +35,9 @@ std::istream& operator>>(std::istream& is, Descriptor& d)
 
 std::ostream& operator<<(std::ostream& os, const Descriptor& d)
 {
-	std::print(os, "{:01d}{:02d}{:03d}", d.m_f, d.m_x, d.m_y);
+	os << std::setw(1) << std::setfill('0') << d.m_f
+	   << std::setw(2) << std::setfill('0') << d.m_x
+	   << std::setw(3) << std::setfill('0') << d.m_y
+	   << std::setw(0) << std::setfill(' ');
 	return os;
 }

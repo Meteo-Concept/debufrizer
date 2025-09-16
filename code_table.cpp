@@ -12,17 +12,17 @@
 
 CodeTable::CodeTable(int globalTable, int globalTableVersion, int origCentre, int localTableVersion)
 {
-	parseElementTable(std::format("bufr/tables/{}/wmo/{}/element.table", globalTable, globalTableVersion));
-	parseElementTable(std::format("bufr/tables/{}/local/{}/{}/0/element.table", globalTable, localTableVersion, origCentre));
-	parseSequenceTable(std::format("bufr/tables/{}/wmo/{}/sequence.def", globalTable, globalTableVersion));
-	parseSequenceTable(std::format("bufr/tables/{}/local/{}/{}/0/sequence.def", globalTable, localTableVersion, origCentre));
+	parseElementTable("bufr/tables/" + std::to_string(globalTable) + "/wmo/" + std::to_string(globalTableVersion) + "/element.table");
+	parseElementTable("bufr/tables/" + std::to_string(globalTable) + "/local/" + std::to_string(localTableVersion) + "/" + std::to_string(origCentre) + "/0/element.table");
+	parseSequenceTable("bufr/tables/" + std::to_string(globalTable) + "/wmo/" + std::to_string(globalTableVersion) + "/sequence.def");
+	parseSequenceTable("bufr/tables/" + std::to_string(globalTable) + "/local/" + std::to_string(localTableVersion) + "/" + std::to_string(origCentre) + "/0/sequence.def");
 }
 
 void CodeTable::parseElementTable(const std::string& filename)
 {
 	std::ifstream is{filename};
 	if (!is) {
-		std::println(std::cerr, "Table {} unavailable", filename);
+		std::cerr << "Table " << filename << " unavailable" << std::endl;
 	}
 
 	while (is) {
@@ -53,7 +53,7 @@ void CodeTable::parseSequenceTable(const std::string& filename)
 {
 	std::ifstream is{filename};
 	if (!is) {
-		std::println(std::cerr, "Table {} unavailable", filename);
+		std::cerr << "Table " << filename << " unavailable" << std::endl;
 	}
 
 	const std::regex re(R"-(\s*"(\d+)"\s*=\s*)-");

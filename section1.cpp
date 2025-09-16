@@ -4,8 +4,10 @@
 
 #include "section1.h"
 
+#include "date.h"
+
 using namespace std::chrono;
-using namespace std::chrono_literals;
+using namespace date;
 
 std::istream& operator>>(std::istream& is, Section1& s)
 {
@@ -83,11 +85,7 @@ std::istream& operator>>(std::istream& is, Section1& s)
 	// date
 	is.read(buffer, 7);
 	if (is) {
-		s.m_time = sys_days{
-			std::chrono::year_month_day{
-				year{(uint8_t(buffer[0]) << 8) + uint8_t(buffer[1])}/buffer[2]/buffer[3]
-			}
-		} +
+		s.m_time = date::sys_days{date::year{(uint8_t(buffer[0]) << 8) + uint8_t(buffer[1])}/buffer[2]/buffer[3]} +
 		hours{buffer[4]} +
 		minutes{buffer[5]} +
 		seconds{buffer[6]};
@@ -107,19 +105,19 @@ std::istream& operator>>(std::istream& is, Section1& s)
 
 std::ostream& operator<<(std::ostream& os, const Section1& s)
 {
-	std::println(os, "size: {}", s.m_size);
-	std::println(os, "master table: {}", s.m_masterTable);
-	std::println(os, "originating centre: {}", s.m_origCentre);
-	std::println(os, "originating subcentre: {}", s.m_origSubcentre);
-	std::println(os, "update: {}", s.m_update);
-	std::println(os, "section 2 present: {}", s.m_optionalSection2);
-	std::println(os, "data category: {}", s.m_dataCategory);
-	std::println(os, "data subcategory: {}", s.m_dataSubcategory);
-	std::println(os, "master table version: {}", s.m_masterTableVersion);
-	std::println(os, "local table version: {}", s.m_localTableVersion);
-	std::println(os, "time: {}", s.m_time);
+	os << "size: " << s.m_size << "\n";
+	os << "master table: " << int(s.m_masterTable) << "\n";
+	os << "originating centre: " << s.m_origCentre << "\n";
+	os << "originating subcentre: " << s.m_origSubcentre << "\n";
+	os << "update: " << int(s.m_update) << "\n";
+	os << "section 2 present: " << s.m_optionalSection2 << "\n";
+	os << "data category: " << int(s.m_dataCategory) << "\n";
+	os << "data subcategory: " << int(s.m_dataSubcategory) << "\n";
+	os << "master table version: " << int(s.m_masterTableVersion) << "\n";
+	os << "local table version: " << int(s.m_localTableVersion) << "\n";
+	os << "time: " << date::format("%Y-%m-%d %H:%M:%S", s.m_time) << "\n";
 	if (s.m_size > 22) {
-		std::println(os, "local field: {}", s.m_optionalLocalField);
+		os << "local field: " << s.m_optionalLocalField << "\n";
 	}
 	return os;
 }

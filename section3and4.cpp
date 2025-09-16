@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <chrono>
 #include <algorithm>
 #include <iterator>
@@ -10,11 +11,13 @@
 #include <gdal/gdal.h>
 #include <gdal/gdal_priv.h>
 
+#include "date.h"
 #include "section3and4.h"
 #include "descriptor.h"
 #include "code_table.h"
 
-Section3And4::Section3And4(CodeTable table) :
+Section3And4::Section3And4(CodeTable table)
+    :
     m_codeTable{std::move(table)}
 {}
 
@@ -92,14 +95,14 @@ std::istream& operator>>(std::istream& is, Section3And4& s)
 
 std::ostream& operator<<(std::ostream& os, const Section3And4& s)
 {
-    std::println(os, "size section 3: {}", s.m_sizeSection3);
-    std::println(os, "size section 4: {}", s.m_sizeSection4);
-    std::println(os, "observed data? : {}", s.m_observedData);
-    std::println(os, "compressed data? : {}", s.m_compressedData);
-    std::println(os, "number of subsets: {}", s.m_numberOfSubsets);
-    std::println(os, "number of descriptors: {}", s.m_descriptors.size());
+    os << "size section 3: " << s.m_sizeSection3 << "\n";
+    os << "size section 4: " << s.m_sizeSection4 << "\n";
+    os << "observed data? : " << s.m_observedData << "\n";
+    os << "compressed data? : " << s.m_compressedData << "\n";
+    os << "number of subsets: " << s.m_numberOfSubsets << "\n";
+    os << "number of descriptors: " << s.m_descriptors.size() << "\n";
     s.displayDescriptors(os, s.m_descriptors);
-    std::print(os, "\n");
+    os << "\n";
 
     return os;
 }
@@ -118,34 +121,35 @@ void Section3And4::displayDescriptors(std::ostream& os, const std::vector<Descri
             {
                 auto c = m_codeTable.getElementCode(d.getCode());
                 if (c) {
-                    std::print(os, " {}", c->description);
+                    os << " " << c->description;
                 }
-                std::print(os, "\n");
+                os << "\n";
             }
             break;
             case 1: // repetition
                 if (d.getY() == 0) {
-                    std::print(os, " delayed");
+                    os << " delayed";
                 }
-                std::println(os, " repetition of the next {} descriptors", d.getX());
+                os << " repetition of the next " << d.getX() << " descriptors\n";
                 break;
             case 2: // operator
-                std::println(os, " operator");
+                os << " operator" << "\n";
                 break;
             case 3: // sequence
             {
                 auto seq = m_codeTable.getSequence(d.getCode());
                 if (seq) {
-                    std::print(os, " sequence of {} elements", seq->size());
+                    os << " sequence of " << seq->size() << " elements\n";
                 }
-                std::print(os, "\n");
             }
             break;
         }
     }
 }
 
-SmallCode Section3And4::extractSingleElement(uint64_t pos, std::map<int, long long>& dataOffsets, int addDataWidth, int addDataScale, const Code& c)
+SmallCode Section3And4::extractSingleElement(
+    uint64_t pos, std::map<int, long long>& dataOffsets, int addDataWidth, int addDataScale, const Code& c
+)
 {
     SmallCode cc{c};
     // Try to find a custom offset or insert the default one for future calls
@@ -154,7 +158,7 @@ SmallCode Section3And4::extractSingleElement(uint64_t pos, std::map<int, long lo
     if (c.type == "long" || c.type == "double") {
         cc.size += addDataWidth;
         uint32_t value = extractValue(pos, cc.size);
-        if (std::popcount(value) < cc.size) {
+        if (value < (0b1 << cc.size) - 1) { // the maximum value (127 for 7 bits, 65535 for 16, etc.) codes a missing value
             long long v = static_cast<long long>(value) + offsetIt->second;
             int scale = cc.factor + addDataScale;
             if (c.type == "long" && scale <= 0) {
@@ -206,7 +210,7 @@ std::vector<SmallCode> Section3And4::makeCodeTree(const std::vector<Descriptor>&
                 {
                     auto c = m_codeTable.getElementCode(d.getCode());
                     if (!c) {
-                        std::println(std::cerr, "FATAL: Unknown element {}, cannot continue", d.getCode());
+                        std::cerr << "FATAL: Unknown element " << d.getCode() << ", cannot continue\n";
                         return {};
                     }
 
@@ -228,7 +232,7 @@ std::vector<SmallCode> Section3And4::makeCodeTree(const std::vector<Descriptor>&
                         ++it;
                         auto rep = m_codeTable.getElementCode(it->getCode());
                         if (!rep) {
-                            std::println(std::cerr, "FATAL: Unknown element {}, cannot continue", d.getCode());
+                            std::cerr << "FATAL: Unknown element " << d.getCode() << ", cannot continue\n";
                             return {};
                         }
                         loop.repetitions = extractValue(pos, rep->size + addDataWidth);
@@ -277,24 +281,20 @@ std::vector<SmallCode> Section3And4::makeCodeTree(const std::vector<Descriptor>&
                                 long long computedOffset = (value & signBit)
                                                                ? -static_cast<long long>(value & ~signBit)
                                                                : value;
-                                std::println(
-                                    std::cerr, "New reference value for {}: {}", newValueCode->code, computedOffset
-                                );
+                                std::cerr << "New reference value for " << newValueCode->code << ": "
+                                          << computedOffset << "\n";
                                 dataOffsets[newValueCode->code] = computedOffset;
                                 pos += d.getY();
                                 ++it;
                             }
                             if (it == end) {
-                                std::println(
-                                    std::cerr,
-                                    "FATAL: Malformed message, operator 203YYY unterminated, cannot continue"
-                                );
+                                std::cerr << "FATAL: Malformed message, operator 203YYY unterminated, cannot continue\n";
                             } else {
                                 ++it;
                             }
                         }
                     } else {
-                        std::println(std::cerr, "Operator {} not handled yet, cannot continue.", d.getCode());
+                        std::cerr << "Operator " << d.getCode() << " not handled yet, cannot continue.\n";
                         return {};
                     }
                 }
@@ -303,7 +303,7 @@ std::vector<SmallCode> Section3And4::makeCodeTree(const std::vector<Descriptor>&
                 {
                     auto seq = m_codeTable.getSequence(d.getCode());
                     if (!seq) {
-                        std::println(std::cerr, "FATAL: Unknown sequence {}, cannot continue", d.getCode());
+                        std::cerr << "FATAL: Unknown sequence " << d.getCode() << ", cannot continue\n";
                         return {};
                     }
                     auto [newSequenceIt, inserted] = sequences.emplace(d.getCode(), std::move(*seq));
@@ -418,21 +418,21 @@ void Section3And4::dumpCodeTree(std::ostream& os, const std::vector<SmallCode>& 
                 auto&& details = m_codeTable.getElementCode(c.code);
                 if (details) {
                     std::string prefix(indentation, '\t');
-                    std::print(os, "{}{:06d} - {} - {} - {}", prefix, c.code, details->name, c.size, c.pos);
+                    os << prefix << std::setw(6) << std::setfill('0') << c.code << " - " << details->name << " - " << c.size << " - " << c.pos;
                     if (std::holds_alternative<long long>(c.value)) {
-                        std::println(os, " : {}", std::get<long long>(c.value));
-                    } else if (std::holds_alternative<long long>(c.value)) {
-                        std::println(os, " : {}", std::get<double>(c.value));
+                        os << " : " << std::get<long long>(c.value) << "\n";
+                    } else if (std::holds_alternative<double>(c.value)) {
+                        os << " : " << std::get<double>(c.value) << "\n";
                     } else if (std::holds_alternative<std::string>(c.value)) {
-                        std::println(os, " : {}", std::get<std::string>(c.value).data());
+                        os << " : " << std::get<std::string>(c.value).data() << "\n";
                     } else if (std::holds_alternative<std::nullopt_t>(c.value)) {
-                        std::println(os, " : missing");
+                        os << " : missing\n";
                     }
                     ++it;
                 }
             } else if (f == 1) {
                 std::string prefix(indentation, '\t');
-                std::println(os, "{}LOOP of {} repetitions of {} elements", prefix, c.repetitions, c.block.size());
+                os << prefix << "LOOP of " << c.repetitions << " repetitions of " << c.block.size() << " elements\n";
                 ++it;
                 pos.emplace_back(c.block.begin(), c.block.end(), indentation + 1);
             }
@@ -461,7 +461,7 @@ void Section3And4::buildTiff(const std::string& filename, Descriptor target)
         int second = -1;
     } grid;
 
-    for (auto it = m_codeTree.begin(); it != m_codeTree.end(); ++it) {
+    for (auto it = m_codeTree.begin() ; it != m_codeTree.end() ; ++it) {
         if (it->code == 30021) {
             grid.sizeX = std::get<long long>(it->value);
         } else if (it->code == 30022) {
@@ -476,7 +476,7 @@ void Section3And4::buildTiff(const std::string& filename, Descriptor target)
             grid.gridY = std::get<long long>(it->value);
         } else if (it->code == 29001) {
             if (std::get<long long>(it->value) != 1) {
-                std::println(std::cerr, "FATAL: Projection used is not polar stereographic (only supported projection for now), cannot continue");
+                std::cerr << "FATAL: Projection used is not polar stereographic (only supported projection for now), cannot continue\n";
                 return;
             }
         } else if (it->code == 4001) {
@@ -496,7 +496,7 @@ void Section3And4::buildTiff(const std::string& filename, Descriptor target)
 
     // Find the relevant data to export as a raster band
     std::optional<SmallCode> targetLoop;
-    for (auto it = m_codeTree.begin(); it != m_codeTree.end(); ++it) {
+    for (auto it = m_codeTree.begin() ; it != m_codeTree.end() ; ++it) {
         if (it->code == 105000 && it->block.size() == grid.sizeX * grid.sizeY) {
             if (it->block[0].code == target.getCode()) { // Found ya!
                 targetLoop = *it;
@@ -504,15 +504,14 @@ void Section3And4::buildTiff(const std::string& filename, Descriptor target)
         }
     }
     if (!targetLoop) {
-        std::println(std::cerr, "FATAL: Unable to find the data to export among the data descriptors, cannot continue");
+        std::cerr << "FATAL: Unable to find the data to export among the data descriptors, cannot continue\n";
         return;
     }
 
-    const char* pszFormat = "GTiff";
     GDALAllRegister();
-    GDALDriver* tifDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
+    GDALDriver* tifDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
     if (tifDriver == nullptr) {
-        std::println(std::cerr, "Driver {} not found", pszFormat);
+        std::cerr << "Driver for TIFF not found\n";
         return;
     }
 
@@ -560,19 +559,20 @@ void Section3And4::buildTiff(const std::string& filename, Descriptor target)
         raster.data(), grid.sizeX, grid.sizeY, GDT_Float64, 0, 0
     );
     if (err != CE_None) {
-        std::println(std::cerr, "Error writing raster band");
+        std::cerr << "Error writing raster band\n";
     }
 
     if (grid.year >= 0 && grid.month >= 0 && grid.day >= 0) {
-        std::chrono::sys_days d{std::chrono::year_month_day{std::chrono::year{grid.year}/grid.month/grid.day}};
+        date::sys_days d{date::year_month_day{date::year{grid.year} / grid.month / grid.day}};
         if (grid.hour >= 0 && grid.minute >= 0 && grid.second >= 0) {
-            std::chrono::sys_seconds t = d + std::chrono::hours{grid.hour} + std::chrono::minutes{grid.minute} + std::chrono::seconds{grid.second};
-            radarDataset->SetMetadataItem("TIFFTAG_DATETIME", std::format("{0:%F}T{0:%T}Z", t).c_str());
+            date::sys_seconds t = d + std::chrono::hours{grid.hour} + std::chrono::minutes{grid.minute} +
+                                  std::chrono::seconds{grid.second};
+            radarDataset->SetMetadataItem("TIFFTAG_DATETIME", date::format("%FT%TZ", t).c_str());
         }
     }
     radarDataset->SetMetadataItem("TIFFTAG_IMAGEDESCRIPTION", "Radar");
     radarDataset->SetMetadataItem("TIFFTAG_ARTIST", "Météo Concept <contact@meteo-concept.fr>");
 
-    // Once we're done, close properly the dataset
+    // Once we're done, properly close the dataset
     GDALClose((GDALDatasetH)radarDataset);
 }

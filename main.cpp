@@ -1,9 +1,8 @@
 #include <iostream>
-#include <format>
 #include <fstream>
-#include <print>
 #include <string>
 
+#include "date.h"
 #include "section0.h"
 #include "section1.h"
 #include "section3and4.h"
@@ -11,7 +10,7 @@
 int main(int argc, char** argv)
 {
 	if (argc <= 1 || argc > 3) {
-		std::println(std::cerr, "Usage: {} <BUFR Météo France file> [<output file prefix>]", argv[0]);
+		std::cerr << "Usage: " << argv[0] << " <BUFR Météo France file> [<output file prefix>]";
 		return 1;
 	}
 	std::string inputFile = std::string{argv[1]};
@@ -39,7 +38,7 @@ int main(int argc, char** argv)
 
 	std::cerr << section3And4 << std::endl;
 
-	std::string outputFile = std::format("{0:%Y}-{0:%m}-{0:%d}_{0:%H}-{0:%M}-{0:%S}.tif", section1.getTime());
+	std::string outputFile = date::format("%Y-%m-%d_%H-%M-%S.tif", section1.getTime());
 	if (argc == 3) {
 		outputFile = argv[2] + outputFile;
 	}

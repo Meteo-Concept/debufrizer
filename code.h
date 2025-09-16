@@ -4,6 +4,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <optional>
 
 //example: 006196|maxObliqueRange|long|Distance oblique maximal d'utilisation des donnees|m|-3|0|16
 struct Code {
@@ -15,6 +16,8 @@ struct Code {
 	int factor = 0;
 	int offset = 0;
 	int size = 0;
+
+	Code(int c = -1) : code{c} {}
 };
 
 struct SmallCode {

@@ -27,6 +27,8 @@ std::istream& operator>>(std::istream& is, Section0& s)
 
 std::ostream& operator<<(std::ostream& os, const Section0& s)
 {
-	std::print(os, "{}\ntotal size: {}\nversion: {}\n", s.m_content, s.m_size, s.m_version);
+	os << s.m_content << "\n"
+	   << "total size: " << s.m_size << "\n"
+	   << "version: " << int(s.m_version) << "\n";
 	return os;
 }
