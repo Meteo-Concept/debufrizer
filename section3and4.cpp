@@ -5,6 +5,7 @@
 #include <optional>
 #include <tuple>
 #include <ranges>
+#include <variant>
 
 #include <gdal/gdal.h>
 #include <gdal/gdal_priv.h>
